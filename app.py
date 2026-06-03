@@ -39,7 +39,7 @@ if not DB_URL:
     3. No menu esquerdo, clique em **Secrets**.
     4. Cole a sua variável exatamente neste formato TOML:
     ```toml
-    DB_URL = "postgresql://postgres.mhckrjhvfeckdprntirb:Digital*Solutions!IT26@aws-0-eu-west-1.pooler.supabase.com:5432/postgres"
+    DB_URL = " "
     ```
     5. Clique em **Save**. A aplicação vai reiniciar e funcionar automaticamente!
     """)
