@@ -23,4 +23,8 @@ jobs:
         pip install sqlalchemy psycopg2-binary
 
     - name: Executar o Script de Atualização
+      env:
+        DB_URL: ${{ secrets.DB_URL }}
+        DB_UPDATE_USER: ${{ secrets.DB_UPDATE_USER }}
+        DB_UPDATE_PASS: ${{ secrets.DB_UPDATE_PASS }}
       run: python cron_ping.py
