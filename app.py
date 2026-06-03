@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import os
-import sys
 from sqlalchemy import create_engine, text
 from fpdf import FPDF
 from datetime import datetime
@@ -22,20 +20,15 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- LIGAÇÃO À BASE DE DADOS ---
-# Obtém de forma segura o link de conexão através da variável de ambiente do GitHub
-DB_URL = os.environ.get("SUPABASE_DB_URL")
-
-if not DB_URL:
-    print("Erro: A variável de ambiente 'SUPABASE_DB_URL' não está configurada.")
-    sys.exit(1)
-
+# O teu link de conexão (Direct URL)
+DB_URL = "postgresql://postgres.mhckrjhvfeckdprntirb:Digital*Solutions!IT26@aws-0-eu-west-1.pooler.supabase.com:5432/postgres"
 engine = create_engine(DB_URL)
 
 def run_query(query, params=None):
     with engine.connect() as conn:
         result = conn.execute(text(query), params) if params else conn.execute(text(query))
         conn.commit()
-        return result
+        return result"
 
 # --- LÓGICA DE LOGIN ---
 if 'logged_in' not in st.session_state:
