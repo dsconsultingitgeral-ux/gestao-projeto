@@ -4,7 +4,6 @@ from sqlalchemy import create_engine, text
 from fpdf import FPDF
 from datetime import datetime
 
-
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="DS Business Intelligence", layout="wide", page_icon="📈")
 
@@ -28,7 +27,7 @@ def run_query(query, params=None):
     with engine.connect() as conn:
         result = conn.execute(text(query), params) if params else conn.execute(text(query))
         conn.commit()
-        return result"
+        return result
 
 # --- LÓGICA DE LOGIN ---
 if 'logged_in' not in st.session_state:
