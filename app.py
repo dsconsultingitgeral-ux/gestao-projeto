@@ -3,6 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 from fpdf import FPDF
 from datetime import datetime
+import os
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="DS Business Intelligence", layout="wide", page_icon="📈")
@@ -18,9 +19,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- LIGAÇÃO À BASE DE DADOS ---
-# O teu link de conexão (Direct URL)
-DB_URL = "postgresql://postgres.mhckrjhvfeckdprntirb:Digital*Solutions!IT26@aws-0-eu-west-1.pooler.supabase.com:5432/postgres"
+# --- LIGAÇÃO À BASE DE DADOS (VARIÁVEL SECRETA) ---
+# O código vai buscar a credencial diretamente ao ambiente do servidor/GitHub
+DB_URL = os.environ.get("DB_URL")
+
+if not DB_URL:
+    st.error("❌ Erro: A variável de ambiente 'DB_URL' não foi configurada ou encontrada.")
+    st.stop()
+
 engine = create_engine(DB_URL)
 
 def run_query(query, params=None):
@@ -88,7 +94,7 @@ else:
                 doc = st.text_input("NIF / Identificação Fiscal")
                 if st.form_submit_button("Confirmar Registo"):
                     run_query("INSERT INTO clientes (nome_cliente, email, telefone, num_documento) VALUES (:n, :e, :t, :d)", 
-                             {"n":nome, "e":email, "t":tel, "d":doc})
+                               {"n":nome, "e":email, "t":tel, "d":doc})
                     st.success("Entidade registada com sucesso.")
                     st.rerun()
         
@@ -115,7 +121,7 @@ else:
                     if st.form_submit_button("Validar Projeto"):
                         cli_id = int(df_cl[df_cl['nome_cliente'] == p_cli]['id'].values[0])
                         run_query("INSERT INTO projetos (nome_projeto, cliente_id, orcamento, estado, data_inicio, data_fim, valor_pago) VALUES (:n, :c, :o, :e, :di, :df, 0)",
-                                 {"n":p_nome, "c":cli_id, "o":p_orc, "e":p_est, "di":p_ini, "df":p_fim})
+                                  {"n":p_nome, "c":cli_id, "o":p_orc, "e":p_est, "di":p_ini, "df":p_fim})
                         st.success("Projeto integrado no sistema.")
                         st.rerun()
             else:
@@ -136,7 +142,7 @@ else:
                 
                 if st.form_submit_button("Guardar Alterações"):
                     run_query("UPDATE projetos SET estado = :e, valor_pago = :v WHERE id = :id", 
-                             {"e": novo_estado, "v": novo_pago, "id": int(dados_atuais['id'])})
+                               {"e": novo_estado, "v": novo_pago, "id": int(dados_atuais['id'])})
                     st.success("Dados atualizados.")
                     st.rerun()
 
