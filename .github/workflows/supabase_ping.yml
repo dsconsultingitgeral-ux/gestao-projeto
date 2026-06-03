@@ -1,0 +1,26 @@
+name: Supabase Daily Ping
+
+on:
+  schedule:
+    # Executa automaticamente todos os dias às 00:00 UTC (01:00 em Portugal)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Permite-lhe testar manualmente pela app quando quiser
+
+jobs:
+  ping_db:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Copiar Código do Repositório
+      uses: actions/checkout@v3
+
+    - name: Configurar o Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Instalar Módulos do Banco de Dados
+      run: |
+        pip install sqlalchemy psycopg2-binary
+
+    - name: Executar o Script de Atualização
+      run: python cron_ping.py
