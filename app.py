@@ -19,14 +19,33 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- LIGAÇÃO À BASE DE DADOS (VARIÁVEL SECRETA) ---
-# O código vai buscar a credencial diretamente ao ambiente do servidor/GitHub
-DB_URL = os.environ.get("DB_URL")
+# --- LIGAÇÃO À BASE DE DADOS (CORRIGIDA PARA STREAMLIT CLOUD) ---
+DB_URL = None
 
+# 1. Tenta obter a variável através do método nativo do Streamlit Cloud
+if "DB_URL" in st.secrets:
+    DB_URL = st.secrets["DB_URL"]
+# 2. Se não encontrar, tenta obter das variáveis de ambiente padrão (ex: GitHub/Local)
+else:
+    DB_URL = os.environ.get("DB_URL")
+
+# Se mesmo assim não encontrar, exibe uma mensagem amigável com instruções claras
 if not DB_URL:
-    st.error("❌ Erro: A variável de ambiente 'DB_URL' não foi configurada ou encontrada.")
+    st.error("❌ Erro: A variável 'DB_URL' não foi configurada nos Secrets do Streamlit.")
+    st.markdown("""
+    ### 🛠️ Como resolver isto no painel do Streamlit:
+    1. Vá ao seu painel do **Streamlit Community Cloud**.
+    2. Junto à sua app `gestao-projeto-digital-solutions`, clique nos **três pontos (...)** e escolha **Settings**.
+    3. No menu esquerdo, clique em **Secrets**.
+    4. Cole a sua variável exatamente neste formato TOML:
+    ```toml
+    DB_URL = "postgresql://postgres.mhckrjhvfeckdprntirb:Digital*Solutions!IT26@aws-0-eu-west-1.pooler.supabase.com:5432/postgres"
+    ```
+    5. Clique em **Save**. A aplicação vai reiniciar e funcionar automaticamente!
+    """)
     st.stop()
 
+# Inicializa o motor de ligação
 engine = create_engine(DB_URL)
 
 def run_query(query, params=None):
@@ -48,12 +67,15 @@ if not st.session_state.logged_in:
             user = st.text_input("Utilizador")
             password = st.text_input("Palavra-passe", type="password")
             if st.form_submit_button("Entrar"):
-                res = run_query("SELECT * FROM users WHERE username = :u AND password = :p", {"u": user, "p": password}).fetchone()
-                if res:
-                    st.session_state.logged_in = True
-                    st.rerun()
-                else:
-                    st.error("Falha na autenticação.")
+                try:
+                    res = run_query("SELECT * FROM users WHERE username = :u AND password = :p", {"u": user, "p": password}).fetchone()
+                    if res:
+                        st.session_state.logged_in = True
+                        st.rerun()
+                    else:
+                        st.error("Falha na autenticação.")
+                except Exception as db_err:
+                    st.error(f"Erro ao consultar a base de dados. Verifique a tabela 'users'. Detalhe: {db_err}")
 
 # --- INTERFACE PRINCIPAL ---
 else:
@@ -137,7 +159,7 @@ else:
                 dados_atuais = df_edit[df_edit['nome_projeto'] == projeto_para_editar].iloc[0]
                 
                 col1, col2 = st.columns(2)
-                novo_estado = col1.selectbox("Novo Estado", ["Por começar", "Em desenvolvimento", "Concluído"], index=["Por começar", "Em desenvolvimento", "Concluído"].index(dados_atuais['estado']))
+                novo_estado = col1.selectbox("Novo Estado", ["Por começar", "Em desenvolvimento", "Concluído"], index=["Por começar", "Em development", "Concluído"].index(dados_atuais['estado']))
                 novo_pago = col2.number_input("Valor Liquidado até à data (€)", min_value=0.0, value=float(dados_atuais['valor_pago']))
                 
                 if st.form_submit_button("Guardar Alterações"):
